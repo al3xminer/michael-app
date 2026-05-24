@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-touch-fullscreen" content="yes">
+<meta name="apple-mobile-web-app-title" content="Michael's App">
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<title>Michael's Learning Adventure!</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Arial Rounded MT Bold','Arial',sans-serif;background:#1a0a2e}
+:root{--gold:#FFD700;--gold2:#FFA500;--blue:#00BFFF;--blue2:#0080FF;--green:#00FF88;--green2:#00CC66;--pink:#FF69B4;--pink2:#FF1493;--purple:#9B59B6;--purple2:#6C3483;--red:#FF4444;--bg:#1a0a2e}
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 18px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.active{display:flex}
+#starfield{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.screen>*{position:relative;z-index:1}
+
+/* TYPOGRAPHY */
+.mega{font-size:clamp(1.9rem,6.5vw,3.8rem);font-weight:900;text-transform:uppercase;letter-spacing:3px;text-shadow:0 0 20px currentColor,4px 4px 0 rgba(0,0,0,.5);line-height:1.1;text-align:center}
+.big{font-size:clamp(1.4rem,4vw,2.4rem);font-weight:900;text-shadow:3px 3px 0 rgba(0,0,0,.5)}
+.med{font-size:clamp(1rem,2.8vw,1.6rem);font-weight:700}
+.sm{font-size:clamp(.9rem,2.2vw,1.2rem);font-weight:700}
+.gold{color:var(--gold);text-shadow:0 0 18px var(--gold),0 0 36px var(--gold2)}
+.blue{color:var(--blue);text-shadow:0 0 15px var(--blue)}
+.green{color:var(--green);text-shadow:0 0 15px var(--green)}
+.pink{color:var(--pink);text-shadow:0 0 15px var(--pink)}
+.white{color:#fff}.muted{color:rgba(255,255,255,.55)}.center{text-align:center}
+
+/* LAYOUT */
+.col{display:flex;flex-direction:column;align-items:center}
+.row{display:flex;flex-direction:row;align-items:center}
+.wrap{flex-wrap:wrap}.between{justify-content:space-between}.jcenter{justify-content:center}
+.w100{width:100%}.max700{max-width:700px}.max600{max-width:600px}.max500{max-width:500px}
+.g6{gap:6px}.g10{gap:10px}.g14{gap:14px}.g18{gap:18px}.g24{gap:24px}
+.mt6{margin-top:6px}.mt10{margin-top:10px}.mt14{margin-top:14px}.mt18{margin-top:18px}.mt24{margin-top:24px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;border:none;border-radius:18px;font-family:inherit;font-weight:900;font-size:clamp(.85rem,2.4vw,1.2rem);cursor:pointer;text-transform:uppercase;letter-spacing:2px;min-width:130px;min-height:54px;user-select:none;transition:transform .1s}
+.btn:active{transform:scale(.93)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0a2e;box-shadow:0 5px 0 #8B6914,0 8px 25px rgba(255,215,0,.35)}
+.btn-gold:active{box-shadow:0 2px 0 #8B6914;transform:translateY(3px) scale(.97)}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 5px 0 #004080,0 8px 25px rgba(0,191,255,.35)}
+.btn-blue:active{box-shadow:0 2px 0 #004080;transform:translateY(3px) scale(.97)}
+.btn-green{background:linear-gradient(135deg,var(--green),var(--green2));color:#1a0a2e;box-shadow:0 5px 0 #006633,0 8px 25px rgba(0,255,136,.35)}
+.btn-green:active{box-shadow:0 2px 0 #006633;transform:translateY(3px) scale(.97)}
+.btn-purple{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;box-shadow:0 5px 0 #3d1a5e,0 8px 25px rgba(155,89,182,.35)}
+.btn-red{background:linear-gradient(135deg,#FF6666,var(--red));color:#fff;box-shadow:0 5px 0 #880000}
+.btn-sm{padding:9px 18px;font-size:clamp(.78rem,1.9vw,.95rem);min-height:42px;min-width:100px}
+.btn-lg{padding:18px 40px;font-size:clamp(1rem,2.8vw,1.5rem);min-height:66px}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:20px;padding:18px;backdrop-filter:blur(8px)}
+.card-gold{border-color:var(--gold);box-shadow:0 0 18px rgba(255,215,0,.22)}
+.card-blue{border-color:var(--blue);box-shadow:0 0 18px rgba(0,191,255,.22)}
+.card-green{border-color:var(--green);box-shadow:0 0 18px rgba(0,255,136,.22)}
+.card-pink{border-color:var(--pink);box-shadow:0 0 18px rgba(255,105,180,.22)}
+.card-purple{border-color:var(--purple);box-shadow:0 0 18px rgba(155,89,182,.22)}
+
+/* STREAK BAR */
+.streak-bar{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(255,107,0,.25),rgba(255,50,0,.12));border:2px solid rgba(255,150,0,.45);border-radius:40px;padding:9px 20px;width:100%;max-width:700px;justify-content:center}
+.streak-num{font-size:1.7rem;font-weight:900;color:#FF6B00;text-shadow:0 0 12px #FF6B00}
+
+/* ===== HOME QUEST TILES ===== */
+.quest-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:700px}
+.quest-tile{border-radius:20px;padding:14px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:3px solid;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;position:relative}
+.quest-tile:active{transform:scale(.92)}
+.qt-maths{background:linear-gradient(145deg,rgba(255,107,53,.2),rgba(255,69,0,.08));border-color:rgba(255,107,53,.55)}
+.qt-english{background:linear-gradient(145deg,rgba(0,191,255,.2),rgba(0,128,255,.08));border-color:rgba(0,191,255,.55)}
+.qt-chinese{background:linear-gradient(145deg,rgba(255,23,68,.2),rgba(213,0,0,.08));border-color:rgba(255,23,68,.55)}
+.qt-history{background:linear-gradient(145deg,rgba(155,89,182,.2),rgba(108,52,131,.08));border-color:rgba(155,89,182,.55)}
+.qt-icon{font-size:2rem;line-height:1}
+.qt-name{font-size:.9rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#fff}
+.qt-levels{display:flex;gap:5px;justify-content:center}
+.lvpip{width:20px;height:7px;border-radius:4px;background:rgba(255,255,255,.15)}
+.lvpip.done{background:var(--green)}
+.lvpip.partial{background:var(--gold)}
+
+/* ===== LADDER (HOME MINI) ===== */
+.ladder-mini{width:100%;max-width:700px;background:linear-gradient(135deg,rgba(155,89,182,.18),rgba(108,52,131,.12));border:2px solid var(--purple);border-radius:20px;padding:14px 18px}
+.rank-row{display:flex;align-items:center;gap:12px}
+.rank-icon-big{font-size:2.6rem;line-height:1;animation:bounce 2s ease-in-out infinite}
+.xp-bar-wrap{width:100%;background:rgba(255,255,255,.1);border-radius:20px;height:10px;margin:6px 0 3px;overflow:hidden}
+.xp-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width .6s ease}
+
+/* ===== LADDER SCREEN ===== */
+.ladder-outer{position:relative;width:100%;max-width:480px;padding:8px 36px}
+.ladder-rail{position:absolute;top:0;bottom:0;width:13px;border-radius:7px;background:linear-gradient(180deg,#FFD700 0%,#FF8C00 50%,#8B4513 100%);box-shadow:0 0 14px rgba(255,215,0,.35)}
+.rail-l{left:12px}.rail-r{right:12px}
+.ladder-rung{display:flex;align-items:center;gap:8px;padding:9px 12px;margin:6px 0;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);position:relative}
+.ladder-rung::before,.ladder-rung::after{content:'';position:absolute;top:50%;transform:translateY(-50%);height:4px;width:24px;border-radius:2px;background:linear-gradient(90deg,rgba(255,165,0,.5),rgba(139,69,19,.6))}
+.ladder-rung::before{left:-24px}
+.ladder-rung::after{right:-24px;background:linear-gradient(90deg,rgba(139,69,19,.6),rgba(255,165,0,.5))}
+.rung-done{border-color:rgba(0,255,136,.28) !important;background:rgba(0,255,136,.05) !important;opacity:.72}
+.rung-current{border-color:var(--gold) !important;background:rgba(255,215,0,.14) !important;box-shadow:0 0 22px rgba(255,215,0,.4) !important;animation:rungGlow 2s ease-in-out infinite}
+.rung-locked{opacity:.38}
+@keyframes rungGlow{0%,100%{box-shadow:0 0 22px rgba(255,215,0,.4)}50%{box-shadow:0 0 40px rgba(255,215,0,.7)}}
+.tier-banner{text-align:center;padding:6px 18px;margin:12px 0 4px;border-radius:18px;font-weight:900;font-size:.8rem;text-transform:uppercase;letter-spacing:2px}
+.tier-bronze{background:rgba(205,127,50,.18);border:1px solid rgba(205,127,50,.4);color:#CD7F32}
+.tier-silver{background:rgba(192,192,192,.12);border:1px solid rgba(192,192,192,.35);color:#C0C0C0}
+.tier-gold-t{background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold)}
+
+/* ===== LEVEL SELECT ===== */
+.lsc{width:100%;border-radius:18px;padding:16px 18px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.lsc:active{transform:scale(.97)}
+.lsc-rec{border-color:var(--gold);background:rgba(255,215,0,.1);box-shadow:0 0 18px rgba(255,215,0,.2)}
+.lsc-done{border-color:rgba(0,255,136,.28);background:rgba(0,255,136,.06);opacity:.78;cursor:default}
+.lsc-badge{display:inline-block;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:10px}
+.lsc-badge-rec{background:rgba(255,215,0,.2);color:var(--gold)}
+.lsc-badge-done{background:rgba(0,255,136,.2);color:var(--green)}
+.lsc-play{margin-top:10px;text-align:center;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0a2e;font-weight:900;padding:9px;border-radius:11px;font-size:.95rem;text-transform:uppercase;letter-spacing:1px}
+
+/* SUBJECT BADGE */
+.sbadge{display:inline-flex;align-items:center;gap:7px;padding:7px 18px;border-radius:28px;font-weight:900;font-size:.95rem;text-transform:uppercase;letter-spacing:2px}
+.sb-maths{background:linear-gradient(135deg,#FF6B35,#FF4500);color:#fff;box-shadow:0 0 14px rgba(255,107,53,.45)}
+.sb-english{background:linear-gradient(135deg,#00BFFF,#0080FF);color:#fff;box-shadow:0 0 14px rgba(0,191,255,.45)}
+.sb-chinese{background:linear-gradient(135deg,#FF1744,#D50000);color:#fff;box-shadow:0 0 14px rgba(255,23,68,.45)}
+.sb-history{background:linear-gradient(135deg,#9B59B6,#6C3483);color:#fff;box-shadow:0 0 14px rgba(155,89,182,.45)}
+
+/* PROGRESS BAR */
+.prog-wrap{width:100%;background:rgba(255,255,255,.1);border-radius:20px;height:11px;overflow:hidden}
+.prog-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .5s ease}
+.level-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:18px;background:rgba(255,215,0,.14);border:2px solid var(--gold);color:var(--gold);font-weight:900;font-size:.88rem}
+
+/* ANSWER BUTTONS */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;width:100%;max-width:600px;margin:12px 0}
+.ans-btn{padding:18px 12px;border:3px solid rgba(255,255,255,.2);border-radius:17px;background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-weight:900;font-size:clamp(.95rem,2.6vw,1.3rem);cursor:pointer;text-align:center;transition:all .15s;min-height:64px;line-height:1.3}
+.ans-btn:active{transform:scale(.95)}
+.ans-btn.correct{background:linear-gradient(135deg,var(--green),var(--green2)) !important;border-color:var(--green) !important;color:#1a0a2e !important;animation:cf .4s ease}
+.ans-btn.wrong{background:linear-gradient(135deg,#FF6666,var(--red)) !important;border-color:var(--red) !important;animation:ws .4s ease}
+@keyframes cf{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes ws{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.ans-btn.chinese-opt{font-size:clamp(1.7rem,4.5vw,2.6rem);min-height:76px}
+.ans-input{width:100%;max-width:360px;padding:15px 20px;border:3px solid var(--blue);border-radius:17px;background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-weight:700;font-size:clamp(1rem,2.6vw,1.5rem);text-align:center;outline:none;margin:9px 0}
+.ans-input:focus{border-color:var(--gold);box-shadow:0 0 18px rgba(255,215,0,.28)}
+.ans-input::placeholder{color:rgba(255,255,255,.32)}
+
+/* QUESTION BOX */
+.q-box{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.18);border-radius:18px;padding:18px 22px;width:100%;max-width:680px;text-align:center}
+.q-text{font-size:clamp(1.1rem,3.5vw,1.9rem);font-weight:700;color:#fff;line-height:1.5}
+
+/* EXPLANATION */
+.exp-box{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,165,0,.07));border:2px solid rgba(255,215,0,.38);border-radius:17px;padding:14px 18px;width:100%;max-width:680px;color:#fff;font-size:clamp(.95rem,2.3vw,1.2rem);line-height:1.65;text-align:left;animation:fadeUp .3s ease}
+.exp-label{color:var(--gold);font-weight:900;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;display:block}
+
+/* STARS */
+.stars-row{display:flex;gap:5px;justify-content:center}
+.star-icon{font-size:2.1rem;transition:transform .3s,filter .3s;filter:grayscale(100%) brightness(.38)}
+.star-icon.lit{filter:none;transform:scale(1.2);animation:sp .4s ease}
+@keyframes sp{0%{transform:scale(1)}50%{transform:scale(1.6) rotate(18deg)}100%{transform:scale(1.2)}}
+
+/* FEEDBACK POPUP */
+.feedback-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:100;background:rgba(0,0,0,.92);border-radius:26px;padding:24px 42px;text-align:center;font-size:1.7rem;font-weight:900;color:#fff;transition:transform .3s cubic-bezier(.34,1.56,.64,1);border:4px solid currentColor;pointer-events:none}
+.feedback-popup.show{transform:translate(-50%,-50%) scale(1)}
+.fb-correct{color:var(--green);border-color:var(--green)}
+.fb-wrong{color:var(--red);border-color:var(--red)}
+
+/* READING PASSAGE */
+.reading-passage{background:rgba(0,191,255,.1);border:2px solid rgba(0,191,255,.32);border-radius:15px;padding:16px 18px;font-size:clamp(1.1rem,2.8vw,1.45rem);color:#fff;line-height:1.78;max-width:680px;text-align:left;margin:8px 0}
+
+/* CHINESE */
+.ch-char{font-size:clamp(3rem,10vw,6.5rem);font-weight:900;color:var(--gold);text-shadow:0 0 28px var(--gold);line-height:1}
+.pinyin{font-size:clamp(1.3rem,3.2vw,2rem);color:var(--blue);font-weight:700;font-style:normal;letter-spacing:3px}
+
+/* CONFETTI / EMOJI */
+.confetti-piece{position:fixed;top:-20px;pointer-events:none;z-index:300;border-radius:3px;animation:cf2 linear forwards}
+@keyframes cf2{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.emoji-burst{position:fixed;pointer-events:none;z-index:200;font-size:2rem;animation:eb 1.2s ease-out forwards}
+@keyframes eb{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.5)}}
+
+/* LEVEL UP BANNER */
+.lvup-banner{position:fixed;top:0;left:0;width:100%;padding:16px;text-align:center;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0a2e;font-size:1.6rem;font-weight:900;z-index:400;animation:lvBanner 3.5s ease forwards}
+@keyframes lvBanner{0%{transform:translateY(-100%)}15%{transform:translateY(0)}80%{transform:translateY(0)}100%{transform:translateY(-100%)}}
+
+/* XP FLASH */
+.xp-flash{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:900;font-size:1.3rem;padding:10px 26px;border-radius:28px;z-index:400;animation:xpF 2.2s ease forwards;pointer-events:none}
+@keyframes xpF{0%{opacity:0;transform:translateX(-50%) translateY(20px)}20%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+
+/* DASHBOARD */
+.dash-table{width:100%;border-collapse:collapse;margin-top:12px}
+.dash-table th{background:rgba(255,215,0,.18);color:var(--gold);padding:9px 6px;text-align:center;font-size:.8rem;border:1px solid rgba(255,215,0,.18)}
+.dash-table td{padding:8px 5px;text-align:center;color:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.07);font-size:.8rem}
+.dash-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+.export-box{width:100%;min-height:100px;background:rgba(0,0,0,.4);border:2px solid rgba(255,215,0,.3);border-radius:14px;color:rgba(255,255,255,.85);font-size:.82rem;padding:12px;font-family:monospace;resize:vertical}
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div class="feedback-popup" id="feedbackPopup"></div>
+
+<!-- ====== HOME ====== -->
+<div class="screen active" id="homeScreen">
+  <div class="streak-bar w100 max700 mt6">
+    <span style="font-size:1.7rem">🔥</span>
+    <span class="streak-num" id="streakNum">0</span>
+    <span class="sm white" style="font-weight:700"> Day Streak</span>
+    <span class="muted" id="streakBest" style="font-size:.82rem;margin-left:6px"></span>
+  </div>
+
+  <div class="mega gold mt10">MICHAEL'S<br>ADVENTURE!</div>
+
+  <!-- Ladder mini card -->
+  <div class="ladder-mini mt14 row g14">
+    <div class="rank-icon-big" id="rankIcon">🌱</div>
+    <div style="flex:1">
+      <div class="muted" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px" id="rankLevelLabel">LEVEL 1</div>
+      <div class="gold" style="font-size:1.25rem;font-weight:900" id="rankNameLabel">Seedling</div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div></div>
+      <div class="muted" style="font-size:.8rem;font-weight:700" id="xpBarText">0 / 100 XP</div>
+    </div>
+    <div>
+      <button class="btn btn-purple btn-sm" onclick="openLadder()">🪜 Ladder</button>
+      <div class="gold" style="font-size:.85rem;font-weight:900;text-align:center;margin-top:6px" id="todayXpBadge">+0 today</div>
+    </div>
+  </div>
+
+  <!-- Subject tiles -->
+  <div class="quest-grid mt14" id="questGrid"></div>
+
+  <!-- Today bar -->
+  <div class="col w100 max700 g6 mt14">
+    <div class="row w100 between">
+      <div class="muted" style="font-size:.85rem;font-weight:700">Today's XP</div>
+      <div class="muted" style="font-size:.85rem" id="todayXpLabel">0 / 60</div>
+    </div>
+    <div class="prog-wrap w100"><div class="prog-fill" id="todayBar" style="width:0%"></div></div>
+  </div>
+
+  <button id="summaryBtn" class="btn btn-gold btn-lg mt18 pulse" onclick="showTodaySummary()" style="display:none">🏆 TODAY'S RESULTS!</button>
+  <button class="btn btn-purple btn-sm mt18" onclick="showScreen('dashLoginScreen')">👨‍💼 Parent Dashboard</button>
+  <div style="height:18px"></div>
+</div>
+
+<!-- ====== LADDER SCREEN ====== -->
+<div class="screen" id="ladderScreen">
+  <div class="row w100 max700 between wrap g10 mt6">
+    <div class="big gold">🪜 Ladder of Learning</div>
+    <button class="btn btn-purple btn-sm" onclick="showScreen('homeScreen')">← Home</button>
+  </div>
+  <div class="muted mt6 center" style="font-size:.88rem">Earn stars to climb — 60 per day max!</div>
+  <div class="ladder-outer mt14 w100" id="ladderOuter">
+    <div class="ladder-rail rail-l"></div>
+    <div class="ladder-rail rail-r"></div>
+    <div id="ladderRungs"></div>
+  </div>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ====== LEVEL SELECT ====== -->
+<div class="screen" id="levelSelectScreen">
+  <div id="lsSubjectBadge" class="mt10"></div>
+  <div class="big white mt10 center">Choose Your Level!</div>
+  <div class="muted mt6 center" style="font-size:.9rem">Pick a challenge — completed levels are locked for today</div>
+  <div class="col g14 mt18 w100 max600" id="levelCards"></div>
+  <button class="btn btn-purple btn-sm mt18" onclick="showScreen('homeScreen')">← Back</button>
+  <div style="height:18px"></div>
+</div>
+
+<!-- ====== SUBJECT INTRO ====== -->
+<div class="screen" id="subjectIntroScreen">
+  <div id="introMascot" class="mt10" style="font-size:5rem;animation:bounce 1.5s ease-in-out infinite"></div>
+  <div id="introBadge" class="mt10"></div>
+  <div id="introTitle" class="big white mt10 center"></div>
+  <div id="introLevel" class="mt8"></div>
+  <div id="introDesc" class="card mt14 center white max600 w100" style="line-height:1.65;font-size:1rem"></div>
+  <button class="btn btn-gold btn-lg mt24 pulse" onclick="beginSubject()">🚀 LET'S GO!</button>
+  <button class="btn btn-purple btn-sm mt14" onclick="showScreen('levelSelectScreen')">← Back</button>
+</div>
+
+<!-- ====== QUESTION ====== -->
+<div class="screen" id="questionScreen">
+  <div class="row w100 max700 g10 between wrap mt6">
+    <div id="qSubjectBadge"></div>
+    <div id="qLevelBadge" class="level-badge">Lv <span id="qLevelNum">1</span></div>
+    <div class="white sm">Q<span id="qNum">1</span>/<span id="qTotal">6</span></div>
+  </div>
+  <div class="prog-wrap w100 max700 mt8"><div class="prog-fill" id="qProg" style="width:0%"></div></div>
+  <div id="qVisual" class="mt10 center w100 max700"></div>
+  <div class="q-box mt8 w100 max700"><div id="qText" class="q-text"></div></div>
+  <div id="qAnswerArea" class="col w100 max700 mt6" style="align-items:center"></div>
+  <div id="expBox" class="exp-box mt10 max700 w100" style="display:none">
+    <span class="exp-label">💡 Here's why:</span>
+    <span id="expText"></span>
+  </div>
+  <button id="nextBtn" class="btn btn-blue mt14" style="display:none" onclick="advanceQ()">NEXT →</button>
+  <div class="stars-row mt10" id="qStars">
+    <span class="star-icon">⭐</span><span class="star-icon">⭐</span>
+    <span class="star-icon">⭐</span><span class="star-icon">⭐</span><span class="star-icon">⭐</span>
+  </div>
+  <div style="height:14px"></div>
+</div>
+
+<!-- ====== SUBJECT RESULT ====== -->
+<div class="screen" id="subjectResultScreen">
+  <div id="rMascot" class="mt10" style="font-size:5rem"></div>
+  <div id="rBadge" class="mt10"></div>
+  <div id="rTitle" class="big white mt10 center"></div>
+  <div class="stars-row mt16" id="rStars" style="gap:10px">
+    <span class="star-icon" style="font-size:3.3rem">⭐</span>
+    <span class="star-icon" style="font-size:3.3rem">⭐</span>
+    <span class="star-icon" style="font-size:3.3rem">⭐</span>
+    <span class="star-icon" style="font-size:3.3rem">⭐</span>
+    <span class="star-icon" style="font-size:3.3rem">⭐</span>
+  </div>
+  <div id="rScore" class="med gold mt10 center"></div>
+  <div id="rXP" class="mt7 center" style="font-size:1.1rem;color:var(--purple);font-weight:900"></div>
+  <div id="rMsg" class="card mt14 center white max600 w100" style="line-height:1.65;font-size:1rem"></div>
+  <button class="btn btn-gold btn-lg mt24" onclick="returnToHome()">← QUEST MAP</button>
+</div>
+
+<!-- ====== SUMMARY ====== -->
+<div class="screen" id="summaryScreen">
+  <div id="sMascot" class="mt6 center" style="font-size:3.8rem"></div>
+  <div class="big gold mt8 center">TODAY'S RESULTS!</div>
+  <div class="col g12 mt16 w100 max700" id="sSubjects"></div>
+  <div class="card card-gold mt18 center w100 max700">
+    <div class="med white">Total XP Today</div>
+    <div class="stars-row mt8 jcenter" id="sTotalStars" style="gap:7px"></div>
+    <div id="sTotalNum" class="big gold mt8"></div>
+  </div>
+  <div class="card mt14 center white w100 max700" style="line-height:1.7;font-size:1rem" id="sAdvice"></div>
+  <button class="btn btn-gold btn-lg mt20" onclick="showScreen('homeScreen')">🏠 HOME</button>
+  <div style="height:18px"></div>
+</div>
+
+<!-- ====== DASH LOGIN ====== -->
+<div class="screen" id="dashLoginScreen">
+  <div style="font-size:3rem;margin-top:24px">🔐</div>
+  <div class="big gold mt8">Parent Dashboard</div>
+  <div class="card mt16 col g14 max600 w100">
+    <div class="white center">Enter parent password:</div>
+    <input type="password" id="dashPwd" class="ans-input" placeholder="Password…" style="max-width:100%" onkeydown="if(event.key==='Enter')dashLogin()">
+    <div id="dashErr" style="color:var(--red);font-weight:700;display:none">Wrong password!</div>
+    <button class="btn btn-gold w100" onclick="dashLogin()">UNLOCK 🔓</button>
+  </div>
+  <button class="btn btn-purple btn-sm mt16" onclick="showScreen('homeScreen')">← Back</button>
+</div>
+
+<!-- ====== DASHBOARD ====== -->
+<div class="screen" id="dashScreen">
+  <div class="row w100 max700 between wrap g10 mt6">
+    <div class="med gold">📊 Parent Dashboard</div>
+    <button class="btn btn-purple btn-sm" onclick="showScreen('homeScreen')">🏠 Home</button>
+  </div>
+  <div class="row g10 mt10 wrap jcenter w100 max700" id="dashStats"></div>
+  <div class="card mt14 w100 max700" style="overflow-x:auto">
+    <div class="sm gold" style="margin-bottom:11px">Session History</div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table class="dash-table" id="dashTable">
+        <thead><tr><th>Date</th><th>Ma L1</th><th>Ma L2</th><th>Ma L3</th><th>En L1</th><th>En L2</th><th>En L3</th><th>Ch L1</th><th>Ch L2</th><th>Ch L3</th><th>Hi L1</th><th>Hi L2</th><th>Hi L3</th><th>XP</th></tr></thead>
+        <tbody id="dashBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card mt14 w100 max700">
+    <div class="sm gold" style="margin-bottom:11px">Score Progress</div>
+    <canvas id="progChart" style="width:100%;max-height:190px"></canvas>
+  </div>
+
+  <!-- EXPORT / IMPORT -->
+  <div class="card card-gold mt14 w100 max700">
+    <div class="sm gold" style="margin-bottom:10px">📦 Transfer Michael's Progress</div>
+    <div class="muted" style="font-size:.82rem;line-height:1.6;margin-bottom:10px">
+      Use this to keep Michael's stars and level when the app is updated.<br>
+      <strong style="color:var(--gold)">Option A</strong> — Copy the export code and paste it into the Import box in any new version of the app.<br>
+      <strong style="color:var(--gold)">Option B</strong> — Paste the export code into your Claude chat along with your change request.
+    </div>
+    <button class="btn btn-gold btn-sm w100" onclick="exportProgress()">📋 Export Progress</button>
+    <textarea id="exportBox" class="export-box mt10" placeholder="Your export code will appear here…" readonly style="height:80px"></textarea>
+    <div class="sm white mt14" style="margin-bottom:8px">Import saved progress:</div>
+    <textarea id="importBox" class="export-box" placeholder="Paste export code here…" style="height:70px"></textarea>
+    <button class="btn btn-green btn-sm w100 mt10" onclick="importProgress()">✅ Apply Import</button>
+    <div id="importMsg" style="font-size:.85rem;font-weight:700;margin-top:8px;display:none"></div>
+  </div>
+
+  <button class="btn btn-red btn-sm mt20" onclick="clearDataConfirm()" style="opacity:.65">🗑 Clear All Data</button>
+  <div style="height:22px"></div>
+</div>
+
+<script>
+// ================================================================
+// STARFIELD
+// ================================================================
+(function(){
+  const c=document.getElementById('starfield'),ctx=c.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  function init(){resize();stars=Array.from({length:110},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,spd:Math.random()*.28+.05,b:Math.random()}))}
+  function draw(){ctx.clearRect(0,0,W,H);stars.forEach(s=>{s.b+=.018*(Math.random()>.5?1:-1);s.b=Math.max(.15,Math.min(1,s.b));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.b})`;ctx.fill();s.y+=s.spd;if(s.y>H){s.y=0;s.x=Math.random()*W}});requestAnimationFrame(draw)}
+  window.addEventListener('resize',resize);init();draw();
+})();
+
+// ================================================================
+// SOUND
+// ================================================================
+let AC=null;
+function ensureAudio(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}}if(AC.state==='suspended')AC.resume()}
+function tone(f,s,d,v=.24,t='sine'){if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;const T=AC.currentTime+s;g.gain.setValueAtTime(v,T);g.gain.exponentialRampToValueAtTime(.001,T+d);o.start(T);o.stop(T+d+.02)}catch(e){}}
+function snd(name){ensureAudio();if(!AC)return;const S={correct:()=>{tone(523,.0,.12,.27);tone(659,.13,.12,.27);tone(784,.26,.26,.27)},wrong:()=>{tone(330,.0,.08,.2,'sawtooth');tone(262,.1,.2,.2,'sawtooth');tone(196,.28,.24,.16,'sawtooth')},star:()=>{tone(880,.0,.08,.18);tone(1047,.1,.12,.18)},levelup:()=>[523,659,784,659,784,1047].forEach((f,i)=>tone(f,i*.13,.25,.27)),complete:()=>[523,659,784,523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.2,.28)),click:()=>tone(900,.0,.04,.08)};if(S[name])S[name]()}
+
+// ================================================================
+// STORAGE
+// ================================================================
+const SKEY='michaelApp_v4';
+function loadData(){try{return JSON.parse(localStorage.getItem(SKEY))||mkDefault()}catch(e){return mkDefault()}}
+function saveData(d){localStorage.setItem(SKEY,JSON.stringify(d))}
+function mkDefault(){return{version:4,sessions:[],levels:{maths:1,english:1,chinese:1,history:1},streaks:{current:0,best:0,lastDate:null},ladderXP:0}}
+let AD=loadData();
+
+// Migrate from older versions
+function migrate(){
+  if(!AD.levels.history)AD.levels.history=1;
+  if(AD.ladderXP===undefined)AD.ladderXP=0;
+  if(!AD.streaks.best)AD.streaks.best=0;
+  saveData(AD);
+}
+
+// ================================================================
+// TODAY SESSION
+// ================================================================
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function yesterdayStr(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10)}
+function mkDaySession(date){
+  return{date,maths:{l1:null,l2:null,l3:null},english:{l1:null,l2:null,l3:null},chinese:{l1:null,l2:null,l3:null},history:{l1:null,l2:null,l3:null},totalXP:0}
+}
+function getTodaySess(){
+  const today=todayStr();
+  let s=AD.sessions.find(x=>x.date===today);
+  if(!s){s=mkDaySession(today);AD.sessions.push(s);saveData(AD)}
+  return s;
+}
+function calcSessionXP(sess){
+  let xp=0;
+  ['maths','english','chinese','history'].forEach(sub=>{
+    ['l1','l2','l3'].forEach(lv=>{if(sess[sub][lv]!==null)xp+=sess[sub][lv]});
+  });
+  return xp;
+}
+
+// ================================================================
+// LADDER
+// ================================================================
+const RANKS=[
+  {icon:'🌱',name:'Seedling'},{icon:'🐣',name:'Hatchling'},{icon:'🦊',name:'Fox Cub'},
+  {icon:'🦁',name:'Lion Cub'},{icon:'⚡',name:'Spark'},{icon:'🌊',name:'Wave Rider'},
+  {icon:'🔥',name:'Fire Starter'},{icon:'🐲',name:'Dragon Cub'},{icon:'🌟',name:'Star Seeker'},
+  {icon:'💎',name:'Gem Finder'},{icon:'🚀',name:'Rocket Rider'},{icon:'🌙',name:'Moon Walker'},
+  {icon:'⭐',name:'Star Explorer'},{icon:'🌌',name:'Galaxy Ranger'},{icon:'🏆',name:'Champion'},
+  {icon:'👑',name:'Monarch'},{icon:'🦅',name:'Eagle Eye'},{icon:'🌈',name:'Rainbow Rider'},
+  {icon:'💫',name:'Shooting Star'},{icon:'🎯',name:'Bullseye Ace'},{icon:'🔱',name:'Warlord'},
+  {icon:'⚔️',name:'Knight'},{icon:'🛡️',name:'Guardian'},{icon:'🌠',name:'Star Master'},
+  {icon:'🌀',name:'Tornado'},{icon:'🏔️',name:'Mountain King'},{icon:'🌊',name:'Tsunami'},
+  {icon:'🔮',name:'Wizard'},{icon:'🌞',name:'Sun Keeper'},{icon:'🎮',name:'Game Master'}
+];
+function lvThresh(lv){return lv<=10?100:lv<=20?200:300}
+function getLvInfo(totalXP){let lv=1,rem=totalXP;while(rem>=lvThresh(lv)&&lv<50){rem-=lvThresh(lv);lv++}const n=lvThresh(lv);return{level:lv,cur:rem,need:n,pct:Math.min(100,rem/n*100)}}
+function getRank(lv){return RANKS[Math.min(lv-1,RANKS.length-1)]}
+
+// ================================================================
+// HOME
+// ================================================================
+function setupHome(){
+  migrate();
+  const today=getTodaySess();
+  const xp=calcSessionXP(today);
+  const {streaks,ladderXP}=AD;
+
+  document.getElementById('streakNum').textContent=streaks.current;
+  document.getElementById('streakBest').textContent=streaks.best>1?`(Best: ${streaks.best})`:'';
+
+  const li=getLvInfo(ladderXP);
+  const rk=getRank(li.level);
+  document.getElementById('rankIcon').textContent=rk.icon;
+  document.getElementById('rankLevelLabel').textContent=`LEVEL ${li.level}`;
+  document.getElementById('rankNameLabel').textContent=rk.name;
+  document.getElementById('xpBarFill').style.width=li.pct+'%';
+  document.getElementById('xpBarText').textContent=`${li.cur} / ${li.need} XP`;
+  document.getElementById('todayXpBadge').textContent=`+${xp} today`;
+  document.getElementById('todayBar').style.width=Math.min(100,xp/60*100)+'%';
+  document.getElementById('todayXpLabel').textContent=`${xp} / 60`;
+
+  renderQuestGrid(today);
+  document.getElementById('summaryBtn').style.display=xp>0?'flex':'none';
+}
+
+function renderQuestGrid(today){
+  const subjects=[
+    {id:'maths',icon:'🔢',name:'Maths',cls:'qt-maths'},
+    {id:'english',icon:'📚',name:'English',cls:'qt-english'},
+    {id:'chinese',icon:'🐉',name:'Chinese',cls:'qt-chinese'},
+    {id:'history',icon:'📜',name:'History',cls:'qt-history'}
+  ];
+  const grid=document.getElementById('questGrid');
+  grid.innerHTML='';
+  subjects.forEach(({id,icon,name,cls})=>{
+    const sub=today[id];
+    const done=[sub.l1!==null,sub.l2!==null,sub.l3!==null];
+    const starsToday=done.reduce((a,d,i)=>a+(d?[sub.l1,sub.l2,sub.l3][i]:0),0);
+    const div=document.createElement('div');
+    div.className=`quest-tile ${cls}`;
+    div.onclick=()=>{snd('click');selectSubject(id)};
+    const pips=done.map(d=>`<div class="lvpip${d?' done':''}"></div>`).join('');
+    div.innerHTML=`<div class="qt-icon">${icon}</div><div class="qt-name">${name}</div><div class="qt-levels">${pips}</div><div class="muted" style="font-size:.75rem;font-weight:700">${starsToday>0?starsToday+'⭐ today':'Tap to play!'}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ================================================================
+// LADDER SCREEN
+// ================================================================
+function openLadder(){
+  snd('click');
+  const li=getLvInfo(AD.ladderXP);
+  const container=document.getElementById('ladderRungs');
+  let html='';
+  for(let lv=30;lv>=1;lv--){
+    if(lv===30)html+=`<div class="tier-banner tier-gold-t">🥇 Gold Tier — Levels 21–30 (300 XP each)</div>`;
+    if(lv===20)html+=`<div class="tier-banner tier-silver">🥈 Silver Tier — Levels 11–20 (200 XP each)</div>`;
+    if(lv===10)html+=`<div class="tier-banner tier-bronze">🥉 Bronze Tier — Levels 1–10 (100 XP each)</div>`;
+    const rk=getRank(lv);
+    const isCur=lv===li.level;
+    const isDone=lv<li.level;
+    const cls=isCur?'rung-current':isDone?'rung-done':'rung-locked';
+    let right;
+    if(isCur){
+      right=`<div style="text-align:right"><div style="font-size:.78rem;color:rgba(255,255,255,.55);font-weight:700">${li.cur}/${li.need} XP</div><div style="width:55px;height:5px;background:rgba(255,255,255,.1);border-radius:4px;margin-top:3px"><div style="width:${li.pct}%;height:100%;background:var(--gold);border-radius:4px"></div></div></div>`;
+    } else if(isDone){
+      right=`<span style="color:var(--green);font-size:1.2rem">✓</span>`;
+    } else {
+      right=`<span style="color:rgba(255,255,255,.3);font-size:.78rem">${lvThresh(lv)} XP</span>`;
+    }
+    html+=`<div class="ladder-rung ${cls}" id="rung${lv}"><div style="font-size:${isCur?'2rem':'1.55rem'};line-height:1${isCur?';animation:bounce 1.5s ease-in-out infinite':''}">${rk.icon}</div><div style="flex:1"><div style="font-size:.75rem;color:rgba(255,255,255,.48);font-weight:700">LEVEL ${lv}</div><div style="font-size:.95rem;font-weight:900;color:${isCur?'var(--gold)':isDone?'rgba(255,255,255,.55)':'rgba(255,255,255,.25)'}">${rk.name}</div></div>${right}</div>`;
+  }
+  container.innerHTML=html;
+  showScreen('ladderScreen');
+  setTimeout(()=>{
+    const el=document.getElementById(`rung${li.level}`);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  },150);
+}
+
+// ================================================================
+// SUBJECT SELECTION → LEVEL SELECT
+// ================================================================
+const LEVEL_DESCS={
+  maths:['Addition, subtraction & counting','Times tables, division & fractions','Percentages, large numbers & word problems'],
+  english:['Phonics, spelling & simple sentences','Vocabulary, grammar & reading','Advanced comprehension & complex grammar'],
+  chinese:['Greetings, numbers & basic words','Animals, colours & family words','Sentences & mixed character skills'],
+  history:['Famous people & events (Yr 1–2)','Romans, Vikings & Stone Age (Yr 3–4)','Tudors, WW2 & ancient civilisations (Yr 5–6)']
+};
+let currentSubject='';
+
+function selectSubject(subject){
+  currentSubject=subject;
+  const info=subjInfo(subject);
+  const today=getTodaySess();
+  document.getElementById('lsSubjectBadge').innerHTML=`<span class="sbadge sb-${subject}">${info.icon} ${info.name}</span>`;
+  const container=document.getElementById('levelCards');
+  container.innerHTML='';
+  const rec=AD.levels[subject];
+  [1,2,3].forEach(lv=>{
+    const key=`l${lv}`;
+    const stars=today[subject][key];
+    const done=stars!==null;
+    const isRec=lv===rec&&!done;
+    const card=document.createElement('div');
+    card.className=`lsc${isRec?' lsc-rec':''}${done?' lsc-done':''}`;
+    const desc=LEVEL_DESCS[subject][lv-1];
+    if(done){
+      card.innerHTML=`<div class="row between"><span class="lsc-badge lsc-badge-done">✓ Done</span><span class="muted" style="font-size:.85rem;font-weight:700">Level ${lv}</span></div><div class="sm white mt6">${lvName(subject,lv)}</div><div class="muted mt4" style="font-size:.85rem;line-height:1.5">${desc}</div><div class="stars-row mt8">${starsH(stars,'1.4rem')}</div>`;
+    } else {
+      card.innerHTML=`<div class="row between">${isRec?'<span class="lsc-badge lsc-badge-rec">⭐ Recommended</span>':'<span></span>'}<span class="muted" style="font-size:.85rem;font-weight:700">Level ${lv}</span></div><div class="sm white mt6">${lvName(subject,lv)}</div><div class="muted mt4" style="font-size:.85rem;line-height:1.5">${desc}</div><div class="lsc-play mt10">TAP TO PLAY! →</div>`;
+      card.onclick=()=>startLevel(subject,lv);
+    }
+    container.appendChild(card);
+  });
+  showScreen('levelSelectScreen');
+}
+
+function startLevel(subject,lv){
+  snd('click');
+  Q.subject=subject;Q.level=lv;Q.index=0;Q.correct=0;
+  Q.list=genQuestions(subject,lv);
+  const info=subjInfo(subject);
+  document.getElementById('introMascot').textContent=info.mascot;
+  document.getElementById('introBadge').innerHTML=`<span class="sbadge sb-${subject}">${info.icon} ${info.name}</span>`;
+  document.getElementById('introTitle').textContent=info.title;
+  document.getElementById('introLevel').innerHTML=`<div class="level-badge">Level ${lv} — ${lvName(subject,lv)}</div>`;
+  document.getElementById('introDesc').textContent=info.desc;
+  showScreen('subjectIntroScreen');
+}
+
+function subjInfo(s){
+  const m={
+    maths:{name:'Maths',icon:'🔢',mascot:'🔢',title:'Maths Time!',desc:'Get your thinking cap on! Solve the maths puzzles. You\'ve got this, Michael!'},
+    english:{name:'English',icon:'📚',mascot:'📚',title:'English Time!',desc:'Time for words and letters! Read carefully and pick the right answers. You\'re a star!'},
+    chinese:{name:'Chinese',icon:'🐉',mascot:'🐉',title:'Chinese Time!',desc:'Nǐ hǎo! Let\'s practise some Chinese! 加油 jiā yóu — you can do it!'},
+    history:{name:'History',icon:'📜',mascot:'📜',title:'History Time!',desc:'Travel back in time! Learn about amazing people and events from British history!'}
+  };
+  return m[s];
+}
+
+function lvName(subject,level){
+  if(subject==='chinese')return['🌱 Beginner','🌿 Growing','🌳 Advanced'][level-1]||'';
+  if(subject==='history')return['⭐ Year 1–2','⭐⭐ Year 3–4','⭐⭐⭐ Year 5–6'][level-1]||'';
+  return['⭐ Year 1–2','⭐⭐ Advanced','⭐⭐⭐ Challenge'][level-1]||'';
+}
+
+// ================================================================
+// QUESTION STATE + FLOW
+// ================================================================
+let Q={list:[],index:0,correct:0,subject:'',level:1};
+let advTimer=null;
+const ACOLS=[
+  {bg:'rgba(255,107,53,.18)',bc:'rgba(255,107,53,.55)'},
+  {bg:'rgba(0,191,255,.18)',bc:'rgba(0,191,255,.55)'},
+  {bg:'rgba(0,255,136,.18)',bc:'rgba(0,255,136,.55)'},
+  {bg:'rgba(255,215,0,.18)',bc:'rgba(255,215,0,.55)'}
+];
+
+function beginSubject(){
+  showScreen('questionScreen');
+  document.getElementById('qSubjectBadge').innerHTML=`<span class="sbadge sb-${Q.subject}">${subjInfo(Q.subject).name}</span>`;
+  document.getElementById('qLevelNum').textContent=Q.level;
+  renderQ();
+}
+
+function renderQ(){
+  document.getElementById('expBox').style.display='none';
+  document.getElementById('nextBtn').style.display='none';
+  if(advTimer){clearTimeout(advTimer);advTimer=null}
+  const tot=Q.list.length,idx=Q.index;
+  document.getElementById('qNum').textContent=idx+1;
+  document.getElementById('qTotal').textContent=tot;
+  document.getElementById('qProg').style.width=(idx/tot*100)+'%';
+  updateQStars();
+  const qObj=Q.list[idx];
+  document.getElementById('qText').innerHTML=qObj.question;
+  document.getElementById('qVisual').innerHTML=qObj.visual||'';
+  const area=document.getElementById('qAnswerArea');
+  area.innerHTML='';
+  if(qObj.type==='mcq'){
+    const grid=document.createElement('div');grid.className='ans-grid';
+    qObj.options.forEach((opt,i)=>{
+      const b=document.createElement('button');
+      b.className='ans-btn'+(qObj.optStyle==='chinese'?' chinese-opt':'');
+      b.innerHTML=opt;b.dataset.val=opt;
+      b.style.background=ACOLS[i%4].bg;b.style.borderColor=ACOLS[i%4].bc;
+      b.onclick=()=>handleAns(b,opt,qObj.answer,'mcq');
+      grid.appendChild(b);
+    });
+    area.appendChild(grid);
+  } else {
+    const inp=document.createElement('input');
+    inp.type='text';inp.className='ans-input';inp.placeholder='Type your answer…';
+    inp.autocomplete='off';inp.autocorrect='off';inp.autocapitalize='off';inp.spellcheck=false;
+    const sub=document.createElement('button');
+    sub.className='btn btn-green mt10';sub.textContent='CHECK ✓';
+    sub.onclick=()=>handleAns(sub,inp.value.trim().toLowerCase(),String(qObj.answer).toLowerCase(),'input',inp);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')sub.click()});
+    area.appendChild(inp);area.appendChild(sub);
+    setTimeout(()=>{try{inp.focus()}catch(e){}},300);
+  }
+}
+
+function handleAns(btn,val,correct,type){
+  if(advTimer)return;
+  const isOk=norm(val)===norm(String(correct));
+  const area=document.getElementById('qAnswerArea');
+  area.querySelectorAll('button,input').forEach(el=>el.disabled=true);
+  if(type==='mcq'){
+    area.querySelectorAll('.ans-btn').forEach(b=>{if(norm(b.dataset.val||b.textContent)===norm(String(correct)))b.classList.add('correct')});
+    if(!isOk)btn.classList.add('wrong');
+  }
+  if(isOk){
+    Q.correct++;snd('correct');showFB(true);burst(['⭐','✨','🎉','💥'],btn);
+    updateQStars();
+    advTimer=setTimeout(()=>{advTimer=null;doNextQ()},1400);
+  } else {
+    snd('wrong');showFB(false,String(correct));updateQStars();
+    showExp(Q.list[Q.index]);
+  }
+}
+
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,'')}
+
+function showExp(qObj){
+  if(qObj.explanation){
+    document.getElementById('expText').innerHTML=qObj.explanation;
+    document.getElementById('expBox').style.display='block';
+  }
+  document.getElementById('nextBtn').style.display='flex';
+}
+
+function advanceQ(){if(advTimer){clearTimeout(advTimer);advTimer=null}doNextQ()}
+
+function doNextQ(){
+  document.getElementById('expBox').style.display='none';
+  document.getElementById('nextBtn').style.display='none';
+  Q.index++;
+  if(Q.index>=Q.list.length)finishSubject();
+  else renderQ();
+}
+
+function updateQStars(){
+  const shown=Q.index>0?Math.round((Q.correct/Q.index)*5):0;
+  document.querySelectorAll('#qStars .star-icon').forEach((el,i)=>el.classList.toggle('lit',i<shown));
+}
+
+function showFB(ok,ans=''){
+  const p=document.getElementById('feedbackPopup');
+  if(ok){
+    const msgs=['🎉 AMAZING!','⭐ CORRECT!','💥 GREAT!','🔥 YES!','✨ SUPER!','🌟 BRILLIANT!'];
+    p.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+    p.className='feedback-popup show fb-correct';
+  } else {
+    p.innerHTML=`❌ Answer: <span style="color:#fff">${ans}</span>`;
+    p.className='feedback-popup show fb-wrong';
+  }
+  setTimeout(()=>p.classList.remove('show'),1300);
+}
+
+function burst(emojis,fromEl){
+  const r=fromEl?fromEl.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<8;i++){
+    const el=document.createElement('div');el.className='emoji-burst';
+    el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    const a=(Math.PI*2/8)*i,d=80+Math.random()*80;
+    el.style.cssText=`left:${cx}px;top:${cy}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
+  }
+}
+
+// ================================================================
+// FINISH SUBJECT
+// ================================================================
+function finishSubject(){
+  const pct=Q.correct/Q.list.length;
+  const stars=pct>=.9?5:pct>=.75?4:pct>=.6?3:pct>=.4?2:1;
+  const key=`l${Q.level}`;
+  const sess=getTodaySess();
+  const oldStars=sess[Q.subject][key]||0;
+  const delta=Math.max(0,stars-oldStars);
+  sess[Q.subject][key]=stars;
+  sess.totalXP=calcSessionXP(sess);
+  AD.ladderXP+=delta;
+
+  // Adaptive difficulty
+  if(stars>=4&&AD.levels[Q.subject]<3)AD.levels[Q.subject]=Math.max(AD.levels[Q.subject],Q.level);
+  else if(stars<=2&&AD.levels[Q.subject]>1)AD.levels[Q.subject]=Math.min(AD.levels[Q.subject],Q.level);
+
+  // Streak (first level done today)
+  if(sess.totalXP===stars){
+    const today=todayStr(),yesterday=yesterdayStr();
+    if(AD.streaks.lastDate===yesterday){AD.streaks.current++}
+    else if(AD.streaks.lastDate!==today){AD.streaks.current=1}
+    if(AD.streaks.current>AD.streaks.best)AD.streaks.best=AD.streaks.current;
+    AD.streaks.lastDate=today;
+  }
+
+  const liOld=getLvInfo(AD.ladderXP-delta);
+  const liNew=getLvInfo(AD.ladderXP);
+  saveData(AD);
+
+  // Result screen
+  const info=subjInfo(Q.subject);
+  document.getElementById('rMascot').textContent=info.mascot;
+  document.getElementById('rBadge').innerHTML=`<span class="sbadge sb-${Q.subject}">${info.icon} ${info.name} — Level ${Q.level}</span>`;
+  const titles=['🔄 Keep Trying!','💪 Good Effort!','👍 Well Done!','🎉 Brilliant!','🌟 PERFECT!'];
+  document.getElementById('rTitle').textContent=titles[stars-1];
+  document.getElementById('rScore').textContent=`${Q.correct}/${Q.list.length} correct · ${stars}/5 stars`;
+  document.getElementById('rXP').textContent=`🎮 +${stars} XP earned`;
+
+  const rStarsEls=document.querySelectorAll('#rStars .star-icon');
+  rStarsEls.forEach(el=>el.classList.remove('lit'));
+  rStarsEls.forEach((el,i)=>{if(i<stars)setTimeout(()=>{el.classList.add('lit');snd('star')},i*220+400)});
+
+  const msgs={
+    maths:{5:'WOW! Every answer was perfect!',4:'Brilliant maths work!',3:'Good effort!',2:'Keep practising — you\'re getting there!',1:'Every expert was once a beginner!'},
+    english:{5:'Outstanding English — you\'re a star!',4:'Really great English work!',3:'Good effort, keep reading!',2:'English takes practice — keep going!',1:'Keep trying — bedtime reading will help!'},
+    chinese:{5:'Tài bàng le! 太棒了! Amazing!',4:'Fēicháng hǎo 非常好! Great!',3:'Hǎo 好! Keep it up!',2:'Màn man lái 慢慢来 — take it slowly!',1:'So brave to try Chinese! Keep going!'},
+    history:{5:'You\'re a history expert!',4:'Fantastic history knowledge!',3:'Good history work — keep learning!',2:'History is tricky — the facts will stick!',1:'Don\'t worry — you\'re learning so much!'}
+  };
+  document.getElementById('rMsg').textContent=(msgs[Q.subject]||{})[stars]||'Well done!';
+
+  if(stars>=4)confetti();
+  showScreen('subjectResultScreen');
+  if(liNew.level>liOld.level)setTimeout(()=>lvUpBanner(liNew.level),900);
+  showXPFlash(stars);
+}
+
+function returnToHome(){showScreen('homeScreen');setupHome()}
+
+function showXPFlash(xp){
+  const el=document.createElement('div');el.className='xp-flash';
+  el.textContent=`+${xp} XP!`;document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2300);
+}
+
+function lvUpBanner(lv){
+  snd('levelup');
+  const rk=getRank(lv);
+  const el=document.createElement('div');el.className='lvup-banner';
+  el.textContent=`⬆️ LEVEL UP! Level ${lv} — ${rk.icon} ${rk.name}!`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3600);
+}
+
+// ================================================================
+// TODAY SUMMARY
+// ================================================================
+function showTodaySummary(){
+  const sess=getTodaySess();
+  const xp=calcSessionXP(sess);
+  document.getElementById('sMascot').textContent=xp>=45?'🏆🌟🎉':xp>=25?'🎉✨':'💪🌟';
+
+  const subs=[
+    {id:'maths',icon:'🔢',cls:'gold'},
+    {id:'english',icon:'📚',cls:'blue'},
+    {id:'chinese',icon:'🐉',cls:'pink'},
+    {id:'history',icon:'📜',cls:'purple'}
+  ];
+  document.getElementById('sSubjects').innerHTML=subs.map(({id,icon,cls})=>{
+    const s=sess[id];
+    const levels=['l1','l2','l3'].map((k,i)=>`<div class="row between" style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07)"><span class="muted" style="font-size:.85rem">Level ${i+1}</span><span>${s[k]!==null?starsH(s[k],'1.2rem'):'<span class="muted" style="font-size:.8rem">Not done</span>'}</span></div>`).join('');
+    const total=[s.l1,s.l2,s.l3].filter(v=>v!==null).reduce((a,v)=>a+v,0);
+    return `<div class="card card-${cls} w100"><div class="row between"><span class="sbadge sb-${id}">${icon} ${subjInfo(id).name}</span><span class="${cls}" style="font-weight:900">${total} ⭐</span></div><div class="mt10">${levels}</div></div>`;
+  }).join('');
+
+  document.getElementById('sTotalStars').innerHTML=starsH(Math.round(xp/60*5),'1.9rem');
+  document.getElementById('sTotalNum').textContent=`${xp} / 60 XP today!`;
+
+  // Advice
+  const subScores={};
+  subs.forEach(({id})=>{
+    const s=sess[id];
+    const vals=[s.l1,s.l2,s.l3].filter(v=>v!==null);
+    subScores[id]=vals.length?vals.reduce((a,v)=>a+v,0)/vals.length:null;
+  });
+  const done=Object.entries(subScores).filter(([,v])=>v!==null);
+  let advice=`<strong>🌟 Amazing work today, Michael!</strong><br><br>`;
+  if(done.length){
+    const best=done.sort((a,b)=>b[1]-a[1])[0][0];
+    const worst=done.sort((a,b)=>a[1]-b[1])[0][0];
+    advice+=`Your best subject was <strong>${subjInfo(best).name}</strong> — brilliant!<br>`;
+    if((subScores[worst]||0)<3)advice+=`Give some extra love to <strong>${subjInfo(worst).name}</strong> tomorrow!`;
+    else advice+=`You did brilliantly across all subjects today! 🚀`;
+  }
+  if(AD.streaks.current>1)advice+=`<br><br>🔥 <strong>${AD.streaks.current} day streak!</strong> You\'re on fire!`;
+  const li=getLvInfo(AD.ladderXP);const rk=getRank(li.level);
+  advice+=`<br><br>🎮 <strong>Level ${li.level} ${rk.icon} ${rk.name}</strong> — keep climbing!`;
+  document.getElementById('sAdvice').innerHTML=advice;
+
+  confetti();snd('complete');
+  showScreen('summaryScreen');
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function starsH(n,sz='1.8rem'){let h='';for(let i=0;i<5;i++)h+=`<span style="font-size:${sz};filter:${i<n?'none':'grayscale(100%) brightness(.35)'}">⭐</span>`;return h}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+
+function confetti(){
+  const cols=['#FFD700','#FF69B4','#00BFFF','#00FF88','#FF6B35','#FF1493'];
+  for(let i=0;i<55;i++)setTimeout(()=>{
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;width:${5+Math.random()*7}px;height:${9+Math.random()*9}px;background:${cols[Math.floor(Math.random()*cols.length)]};transform:rotate(${Math.random()*360}deg);animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.4}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),4000);
+  },Math.random()*450);
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+function dashLogin(){
+  const pw=document.getElementById('dashPwd').value;
+  const err=document.getElementById('dashErr');
+  if(pw==='parent123'){err.style.display='none';document.getElementById('dashPwd').value='';showScreen('dashScreen');renderDash()}
+  else err.style.display='block';
+}
+
+function renderDash(){
+  const sessions=[...AD.sessions].reverse();
+  const body=document.getElementById('dashBody');
+  body.innerHTML='';
+  if(!sessions.length){body.innerHTML='<tr><td colspan="14" style="color:rgba(255,255,255,.4);padding:16px">No sessions yet</td></tr>'}
+  else{
+    sessions.forEach(s=>{
+      const tr=document.createElement('tr');
+      const cell=(val)=>val!==null?starsH(val,'0.85rem'):`<span style="color:rgba(255,255,255,.25)">—</span>`;
+      tr.innerHTML=`<td>${s.date}</td><td>${cell(s.maths.l1)}</td><td>${cell(s.maths.l2)}</td><td>${cell(s.maths.l3)}</td><td>${cell(s.english.l1)}</td><td>${cell(s.english.l2)}</td><td>${cell(s.english.l3)}</td><td>${cell(s.chinese.l1)}</td><td>${cell(s.chinese.l2)}</td><td>${cell(s.chinese.l3)}</td><td>${cell(s.history.l1)}</td><td>${cell(s.history.l2)}</td><td>${cell(s.history.l3)}</td><td style="color:var(--gold);font-weight:900">${s.totalXP||0}</td>`;
+      body.appendChild(tr);
+    });
+  }
+  const total=sessions.length;
+  const li=getLvInfo(AD.ladderXP);
+  const avgXP=total?Math.round(AD.sessions.reduce((a,s)=>a+(s.totalXP||0),0)/total):0;
+  document.getElementById('dashStats').innerHTML=`
+    <div class="card center" style="min-width:100px"><div style="font-size:1.8rem">📅</div><div class="sm gold">${total}</div><div class="muted" style="font-size:.8rem">Sessions</div></div>
+    <div class="card center" style="min-width:100px"><div style="font-size:1.8rem">🔥</div><div class="sm gold">${AD.streaks.current}</div><div class="muted" style="font-size:.8rem">Streak</div></div>
+    <div class="card center" style="min-width:100px"><div style="font-size:1.8rem">⭐</div><div class="sm gold">${avgXP}</div><div class="muted" style="font-size:.8rem">Avg XP/day</div></div>
+    <div class="card center" style="min-width:100px"><div style="font-size:1.8rem">🎮</div><div class="sm gold">Lv ${li.level}</div><div class="muted" style="font-size:.8rem">${AD.ladderXP} total XP</div></div>`;
+  renderChart(AD.sessions.slice(-10));
+}
+
+function renderChart(sessions){
+  const cv=document.getElementById('progChart'),ctx=cv.getContext('2d');
+  const W=cv.offsetWidth||460,H=180;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+  if(sessions.length<2){ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='14px Arial';ctx.textAlign='center';ctx.fillText('Play more sessions to see chart!',W/2,H/2);return}
+  const pad={l:28,r:14,t:16,b:26},cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const maxXP=60;
+  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;
+  for(let y=0;y<=4;y++){const yP=pad.t+cH-(y/4)*cH;ctx.beginPath();ctx.moveTo(pad.l,yP);ctx.lineTo(W-pad.r,yP);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='10px Arial';ctx.textAlign='right';ctx.fillText(y*15,pad.l-3,yP+3)}
+  const lines=[{key:'totalXP',color:'#FFD700',label:'Total XP'}];
+  lines.forEach(({key,color})=>{
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;
+    sessions.forEach((s,i)=>{const x=pad.l+(i/(sessions.length-1))*cW,y=pad.t+cH-((s[key]||0)/maxXP)*cH;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.stroke();
+    sessions.forEach((s,i)=>{const x=pad.l+(i/(sessions.length-1))*cW,y=pad.t+cH-((s[key]||0)/maxXP)*cH;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()});
+  });
+}
+
+function clearDataConfirm(){
+  if(confirm('Delete ALL of Michael\'s progress? This cannot be undone!')){
+    localStorage.removeItem(SKEY);AD=mkDefault();renderDash();setupHome();
+  }
+}
+
+// ================================================================
+// EXPORT / IMPORT
+// ================================================================
+function exportProgress(){
+  const li=getLvInfo(AD.ladderXP);const rk=getRank(li.level);
+  const header=`===== MICHAEL'S LEARNING ADVENTURE — PROGRESS EXPORT =====
+Date: ${todayStr()} | Level ${li.level} (${rk.icon} ${rk.name}) | XP: ${AD.ladderXP} | Streak: ${AD.streaks.current}
+
+HOW TO RESTORE:
+  Option A (App)  — Parent Dashboard → Import Progress → paste everything below the DATA: line
+  Option B (Claude) — Paste this entire block in your Claude chat with your change request
+
+DATA:
+${btoa(unescape(encodeURIComponent(JSON.stringify(AD))))}
+
+===== END EXPORT =====`;
+  const box=document.getElementById('exportBox');
+  box.value=header;
+  navigator.clipboard?.writeText(header).then(()=>{box.style.borderColor='var(--green)'}).catch(()=>{});
+}
+
+function importProgress(){
+  const raw=document.getElementById('importBox').value.trim();
+  const msg=document.getElementById('importMsg');
+  try{
+    let json;
+    const dataLine=raw.split('\n').find(l=>l.startsWith('DATA:'));
+    if(dataLine){
+      const b64=raw.split('\n')[raw.split('\n').findIndex(l=>l.startsWith('DATA:'))+1]?.trim();
+      if(b64)json=decodeURIComponent(escape(atob(b64)));
+    }
+    if(!json){
+      // Try as raw base64
+      json=decodeURIComponent(escape(atob(raw)));
+    }
+    const data=JSON.parse(json);
+    if(!Array.isArray(data.sessions))throw new Error('bad');
+    AD={...mkDefault(),...data};
+    migrate();saveData(AD);setupHome();
+    msg.style.color='var(--green)';msg.textContent='✅ Progress imported successfully!';msg.style.display='block';
+    document.getElementById('importBox').value='';
+    renderDash();
+  }catch(e){
+    msg.style.color='var(--red)';msg.textContent='❌ Import failed — check the code and try again.';msg.style.display='block';
+  }
+}
+
+// ================================================================
+// QUESTION GENERATORS
+// ================================================================
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+function mkOpts(correct,wg){const s=new Set([String(correct)]);let a=0;while(s.size<4&&a++<60){const w=String(wg());if(w!==String(correct))s.add(w)}while(s.size<4)s.add(String(Number(correct)+s.size*3+1));return shuffle([...s])}
+function mcq(q,ans,wg,em,exp=''){return{type:'mcq',question:`${em} ${q}`,answer:String(ans),options:mkOpts(ans,wg),explanation:exp}}
+
+function genQuestions(subject,level){
+  if(subject==='maths')return genMaths(level);
+  if(subject==='english')return genEnglish(level);
+  if(subject==='chinese')return genChinese(level);
+  if(subject==='history')return genHistory(level);
+  return [];
+}
+
+// ----------------------------------------------------------------
+// MATHS
+// ----------------------------------------------------------------
+function genMaths(lv){return Array.from({length:6},(_,i)=>lv===1?mathL1(i):lv===2?mathL2(i):mathL3(i))}
+
+function mathL1(i){
+  const t=i%3;
+  if(t===0){const a=rnd(1,20),b=rnd(1,20);return mcq(`${a} + ${b} = ?`,a+b,()=>rnd(1,40),'🔢',`To add ${a}+${b}, start at ${a} and count up ${b} more. The answer is ${a+b}.`)}
+  if(t===1){const b=rnd(1,15),a=rnd(b,25);return mcq(`${a} − ${b} = ?`,a-b,()=>rnd(0,25),'➖',`Start at ${a} and count back ${b} steps. The answer is ${a-b}.`)}
+  const a=rnd(1,30);return mcq(`What comes after ${a}?`,a+1,()=>rnd(a-2,a+5),'🔢',`Counting on from ${a}, the next number is ${a+1}.`);
+}
+
+function mathL2(i){
+  const t=i%4;
+  if(t===0){const a=rnd(2,10),b=rnd(2,10);return mcq(`${a} × ${b} = ?`,a*b,()=>rnd(4,100),'✖️',`${a}×${b} means ${a} groups of ${b}. All together that makes ${a*b}.`)}
+  if(t===1){const b=rnd(2,10),c=rnd(1,10),a=b*c;return mcq(`${a} ÷ ${b} = ?`,c,()=>rnd(1,12),'➗',`${a}÷${b} means sharing ${a} into ${b} equal groups — each group has ${c}.`)}
+  if(t===2){const opts=[['a half (½)',.5,2],['a quarter (¼)',.25,4],['three quarters (¾)',.75,4]];const[lb,v,d]=opts[rnd(0,2)];const base=rnd(1,10)*d;const ans=Math.round(base*v);return mcq(`What is ${lb} of ${base}?`,ans,()=>rnd(1,base),'½',`${lb} of ${base}: divide by ${d} = ${Math.round(base/d)}, then multiply by the top number. Answer: ${ans}.`)}
+  const a=rnd(10,50),b=rnd(10,50);return mcq(`${a} + ${b} = ?`,a+b,()=>rnd(20,100),'🔢',`Add the tens first: ${Math.floor(a/10)*10}+${Math.floor(b/10)*10}, then the units. Answer: ${a+b}.`);
+}
+
+function mathL3(i){
+  const t=i%5;
+  if(t===0){const a=rnd(11,25),b=rnd(11,25);return mcq(`${a} × ${b} = ?`,a*b,()=>rnd(100,700),'✖️',`Break it: (${a}×${Math.floor(b/10)*10}) + (${a}×${b%10}) = ${a*Math.floor(b/10)*10}+${a*(b%10)} = ${a*b}.`)}
+  if(t===1){const n=rnd(1,5),d=rnd(n+1,10),tot=d*rnd(2,5);const ans=Math.round(tot*n/d);return mcq(`${n}/${d} of ${tot} = ?`,ans,()=>rnd(1,tot),'½',`${n}/${d} of ${tot}: divide ${tot}÷${d}=${Math.round(tot/d)}, then ×${n} = ${ans}.`)}
+  if(t===2){const p=[10,20,25,50][rnd(0,3)],base=rnd(2,20)*10,ans=base*p/100;return mcq(`${p}% of ${base} = ?`,ans,()=>rnd(1,base),'%',`${p}% means ${p} out of 100. So (${base}÷100)×${p} = ${ans}.`)}
+  if(t===3){const pr=rnd(2,9),qty=rnd(3,8),extra=rnd(5,30),tot=pr*qty+extra;return mcq(`You have ${tot}p. Buy ${qty} sweets at ${pr}p each. How much left?`,extra,()=>rnd(1,tot),'🍬',`${qty}×${pr}p = ${qty*pr}p spent. ${tot}p − ${qty*pr}p = ${extra}p left.`)}
+  const a=rnd(100,999),b=rnd(100,999);return mcq(`${a} + ${b} = ?`,a+b,()=>rnd(200,1900),'🔢',`Add the hundreds, then tens, then units. ${a}+${b} = ${a+b}.`);
+}
+
+// ----------------------------------------------------------------
+// ENGLISH
+// ----------------------------------------------------------------
+const SPELL={
+  1:[
+    {w:'cat',s:'The ___ sat on the mat.',exp:'CAT — C-A-T. Think: Cats Are Terrific!'},
+    {w:'dog',s:'The ___ has a big bone.',exp:'DOG — D-O-G. Think: Dogs Often Growl!'},
+    {w:'sun',s:'The ___ is bright.',exp:'SUN — S-U-N. The sun shines Up Near the sky!'},
+    {w:'run',s:'I like to ___ fast.',exp:'RUN — R-U-N. Racing Under Night!'},
+    {w:'hat',s:'She wore a red ___.',exp:'HAT — H-A-T. Hats Are Terrific!'},
+    {w:'big',s:'The elephant is very ___.',exp:'BIG — B-I-G. Big Indeed Gosh!'},
+    {w:'hop',s:'The bunny can ___.',exp:'HOP — H-O-P. Hop On Pogo-sticks!'},
+    {w:'red',s:'A tomato is ___.',exp:'RED — R-E-D. Roses Everywhere, Dear!'},
+    {w:'sit',s:'Please ___ down.',exp:'SIT — S-I-T. Simply Imagine Tea-time!'},
+    {w:'map',s:'I have a treasure ___.',exp:'MAP — M-A-P. Maps Always Point somewhere!'}
+  ],
+  2:[
+    {w:'happy',s:'She felt very ___.',exp:'HAPPY — H-A-P-P-Y. Notice the double P in the middle!'},
+    {w:'friend',s:'My best ___ is kind.',exp:'FRIEND — F-R-I-E-N-D. Friends are at the END of every adventure!'},
+    {w:'night',s:'Stars come out at ___.',exp:'NIGHT — N-I-G-H-T. The GH is silent — just say "nite"!'},
+    {w:'light',s:'Turn on the ___, please.',exp:'LIGHT — L-I-G-H-T. Same silent GH pattern as NIGHT!'},
+    {w:'school',s:'I go to ___ every day.',exp:'SCHOOL — S-C-H-O-O-L. Notice the SCH blend and double O!'},
+    {w:'because',s:'I\'m tired ___ I ran.',exp:'BECAUSE — Big Elephants Can Always Use Small Exits!'},
+    {w:'water',s:'Fish live in ___.',exp:'WATER — W-A-T-E-R. The sound changes between the A and E!'},
+    {w:'every',s:'I brush my teeth ___ day.',exp:'EVERY — E-V-E-R-Y. Two E\'s — one at the start, one near the end!'},
+    {w:'people',s:'Many ___ went to the park.',exp:'PEOPLE — P-E-O-P-L-E. The EO makes an "ee" sound — tricky!'},
+    {w:'again',s:'Try ___ and you\'ll get it!',exp:'AGAIN — A-G-A-I-N. Two A\'s in this word!'}
+  ],
+  3:[
+    {w:'beautiful',s:'The butterfly was ___.',exp:'BEAUTIFUL — Big Elephants Are Ugly: That Is Funny, Ugly Lemons!'},
+    {w:'different',s:'Each snowflake is ___.',exp:'DIFFERENT — D-I-F-F-E-R-E-N-T. Double F in the middle!'},
+    {w:'important',s:'It is ___ to be kind.',exp:'IMPORTANT — I-M-P-O-R-T-A-N-T. Break it: im-por-tant.'},
+    {w:'together',s:'We work ___ as a team.',exp:'TOGETHER — T-O-G-E-T-H-E-R. Break it: to-GET-her!'},
+    {w:'question',s:'She asked a great ___.',exp:'QUESTION — Q-U-E-S-T-I-O-N. Quest + ion = question!'},
+    {w:'favourite',s:'Pizza is my ___ food.',exp:'FAVOURITE — F-A-V-O-U-R-I-T-E. Don\'t forget the U after O!'},
+    {w:'believe',s:'I ___ you can do it!',exp:'BELIEVE — B-E-L-I-E-V-E. Never beLIEve a lie!'},
+    {w:'necessary',s:'Sleep is ___ for health.',exp:'NECESSARY — 1 Collar, 2 Socks: one C, two S\'s! N-E-C-E-S-S-A-R-Y.'}
+  ]
+};
+
+function spellingQ(lv){
+  const pool=SPELL[Math.min(lv,3)];
+  const item=pool[rnd(0,pool.length-1)];
+  return{type:'input',question:`✏️ Spell the missing word:\n"${item.s.replace('___','_ _ _')}"`,answer:item.w,visual:`<div style="font-size:1.2rem;color:#fff;font-weight:700;line-height:1.7">"${item.s.replace('___','<span style="color:var(--gold)">???</span>')}"</div>`,explanation:item.exp};
+}
+
+const PHONICS=[
+  {sound:'ch',words:['chin','chip','chop','chat'],wrong:['shin','ship','shop','thin']},
+  {sound:'sh',words:['ship','shop','shed','shin'],wrong:['chip','chop','ched','chin']},
+  {sound:'th',words:['this','that','them','then'],wrong:['dis','dat','dem','den']},
+  {sound:'oo',words:['moon','food','cool','pool'],wrong:['man','fad','cal','pal']},
+  {sound:'ai',words:['rain','tail','sail','mail'],wrong:['ran','tal','sal','mal']},
+  {sound:'ee',words:['tree','free','seed','feet'],wrong:['tra','fra','sad','fat']},
+  {sound:'ou',words:['cloud','shout','proud','found'],wrong:['clad','shut','prad','fond']},
+];
+function phonicsQ(){const ph=PHONICS[rnd(0,PHONICS.length-1)];const w=ph.words[rnd(0,ph.words.length-1)];const opts=shuffle([w,...shuffle(ph.wrong).slice(0,3)]);return{type:'mcq',question:`🔤 Which word has the <span style="color:var(--gold)">"${ph.sound}"</span> sound?`,options:opts,answer:w,explanation:`"${w}" has the <strong>${ph.sound}</strong> sound. Say it slowly: ${w.split('').join('-')}. The ${ph.sound} pair makes a special sound all its own!`}}
+
+const VOCAB=[
+  {w:'big',opts:['large','tiny','cold','wet'],a:'large',exp:'BIG and LARGE both mean something takes up a lot of space — they\'re synonyms!'},
+  {w:'fast',opts:['quick','slow','quiet','tall'],a:'quick',exp:'FAST and QUICK both mean moving with speed — a cheetah is fast — it\'s quick!'},
+  {w:'sad',opts:['unhappy','glad','bright','warm'],a:'unhappy',exp:'SAD and UNHAPPY both describe a feeling of not being glad — they\'re synonyms!'},
+  {w:'start',opts:['begin','stop','sleep','fly'],a:'begin',exp:'START and BEGIN both mean to do the first part of something!'},
+  {w:'cold',opts:['freezing','hot','sunny','loud'],a:'freezing',exp:'COLD and FREEZING both describe low temperature — freezing is even colder!'},
+  {w:'happy',opts:['joyful','angry','sleepy','small'],a:'joyful',exp:'HAPPY and JOYFUL mean the same wonderful feeling! Joyful is a more poetic word.'},
+  {w:'brave',opts:['courageous','scared','tired','silly'],a:'courageous',exp:'BRAVE and COURAGEOUS both describe facing danger without fear — heroes are courageous!'},
+  {w:'tiny',opts:['little','gigantic','shiny','stormy'],a:'little',exp:'TINY and LITTLE both mean very small — a tiny ant is a little insect!'},
+  {w:'shout',opts:['yell','whisper','tiptoe','wave'],a:'yell',exp:'SHOUT and YELL both mean speaking very loudly — at a match, fans shout and yell!'},
+  {w:'beautiful',opts:['gorgeous','ugly','strange','plain'],a:'gorgeous',exp:'BEAUTIFUL and GORGEOUS both mean very attractive — a sunset can be gorgeous!'},
+];
+function vocabQ(){const item=VOCAB[rnd(0,VOCAB.length-1)];return{type:'mcq',question:`📖 Which word means the same as "<span style="color:var(--gold)">${item.w}</span>"?`,options:shuffle([...item.opts]),answer:item.a,explanation:item.exp}}
+
+const GRAMMAR={
+  1:[
+    {q:'Choose the right word: The dog ___ barking.',opts:['is','are','am','be'],a:'is',exp:'"The dog" is singular (one dog), so we use IS. We use ARE for more than one: "The dogs ARE barking."'},
+    {q:'Which is a question?',opts:['The cat sat.','Where is my hat?','I like dogs.','Run fast!'],a:'Where is my hat?',exp:'A question asks for information and ends with a ? mark. "Where is my hat?" is asking something!'},
+    {q:'Pick the correct sentence:',opts:['I goes to school.','I go to school.','I going school.','I goed school.'],a:'I go to school.',exp:'With "I" we always use GO (not "goes" — that\'s for he/she). "I GO to school" is correct!'},
+    {q:'Which word is a verb (doing word)?',opts:['jump','red','happy','big'],a:'jump',exp:'A VERB is an action word. JUMP is something you do! Red, happy, big are describing words.'},
+  ],
+  2:[
+    {q:'She ___ her homework yesterday.',opts:['done','did','do','doing'],a:'did',exp:'"Did" is the past tense of "do". Because it already happened, we use DID. "She DID her homework."'},
+    {q:'Which word is a noun (naming word)?',opts:['elephant','run','quickly','shiny'],a:'elephant',exp:'A NOUN names a person, place or thing. ELEPHANT is a thing! Run = verb, quickly = adverb, shiny = adjective.'},
+    {q:'"what is your name___" — what punctuation?',opts:['?','!','.','...'],a:'?',exp:'This is a question — it asks for information. Questions always end with a QUESTION MARK (?).'},
+    {q:'What is the plural of "child"?',opts:['childs','children','childrens','child'],a:'children',exp:'CHILD has an irregular plural — it changes completely: one CHILD, two CHILDREN. Like tooth/teeth!'},
+  ],
+  3:[
+    {q:'Which is correct apostrophe use?',opts:["the dog's bone","the dogs bone","the dogs' bone's","the dog bone"],a:"the dog's bone",exp:"Apostrophe-s ('s) shows ownership. The bone BELONGS TO the dog = the dog's bone."},
+    {q:'He ___ to school every day.',opts:['go','goes','going','gone'],a:'goes',exp:'With HE/SHE/IT we add -s to most present-tense verbs. HE GOES, SHE RUNS, IT JUMPS.'},
+    {q:'Past tense of "swim"?',opts:['swimmed','swam','swum','swimed'],a:'swam',exp:'"Swim" is irregular — it doesn\'t add -ed. Past tense is SWAM: "Yesterday I SWAM in the pool!"'},
+    {q:'Which word is an adjective?',opts:['slowly','sparkling','ran','she'],a:'sparkling',exp:'An ADJECTIVE describes a noun. SPARKLING describes how something looks — sparkling water! Slowly = adverb, ran = verb, she = pronoun.'},
+  ]
+};
+function grammarQ(lv){const pool=GRAMMAR[Math.min(lv,3)];const item=pool[rnd(0,pool.length-1)];return{type:'mcq',question:`📝 ${item.q}`,options:shuffle([...item.opts]),answer:item.a,explanation:item.exp}}
+
+const COMP_TEXTS=[
+  {text:"Tom has a red kite. He runs fast to make it fly. The wind helps the kite go up high in the blue sky. Tom loves flying his kite on sunny days.",qs:[{q:"What colour is the kite?",opts:["red","blue","green","yellow"],a:"red",exp:'The first sentence says "Tom has a RED kite." Always start reading from the beginning!'},{q:"What does Tom do to make the kite fly?",opts:["runs fast","jumps high","sings","swims"],a:"runs fast",exp:'The text says "He RUNS FAST to make it fly." Running creates wind to lift the kite!'}]},
+  {text:"Lily found a small frog in the garden. It was green and could jump very far. She gave it some water and let it go free. The frog jumped into the pond with a big SPLASH!",qs:[{q:"Where did Lily find the frog?",opts:["in the garden","in the pond","at school","in the house"],a:"in the garden",exp:'The text says "Lily found a small frog IN THE GARDEN." Look at the very first sentence!'},{q:"What colour was the frog?",opts:["green","brown","red","blue"],a:"green",exp:'The text says "It was GREEN." Most garden frogs are green for camouflage!'}]},
+  {text:"The moon shines at night. It is a large rock that travels around the Earth. It takes 28 days to go all the way round. On some nights you can see the full, round moon.",qs:[{q:"What is the moon made of?",opts:["rock","gas","water","fire"],a:"rock",exp:'The passage says the moon "is a large ROCK." It\'s not a star — it\'s a rocky ball!'},{q:"How long does the moon take to orbit Earth?",opts:["28 days","7 days","365 days","12 days"],a:"28 days",exp:'The text says "It takes 28 DAYS to go all the way round." This is why months are about 4 weeks long!'}]}
+];
+function comprehensionQ(){const item=COMP_TEXTS[rnd(0,COMP_TEXTS.length-1)];const qd=item.qs[rnd(0,item.qs.length-1)];return{type:'mcq',question:`🔍 ${qd.q}`,options:shuffle([...qd.opts]),answer:qd.a,visual:`<div class="reading-passage">"${item.text}"</div>`,explanation:qd.exp}}
+
+function genEnglish(lv){
+  const types=['spelling','phonics','vocabulary','grammar','comprehension'];
+  const pool=types.map(t=>{
+    if(t==='spelling')return spellingQ(lv);
+    if(t==='phonics')return phonicsQ();
+    if(t==='vocabulary')return vocabQ();
+    if(t==='grammar')return grammarQ(lv);
+    return comprehensionQ();
+  });
+  pool.push(pool[rnd(0,pool.length-1)]);
+  return shuffle(pool);
+}
+
+// ----------------------------------------------------------------
+// CHINESE
+// ----------------------------------------------------------------
+const CHINESE=[
+  {char:'你好',py:'Nǐ hǎo',en:'Hello',em:'👋',snd:'nee-how',tip:'This is how you say hello! The tones go up then down: Nǐ hǎo!'},
+  {char:'谢谢',py:'Xièxiè',en:'Thank you',em:'🙏',snd:'shyeh-shyeh',tip:'You say it twice! Xièxiè. Say thank you to someone today!'},
+  {char:'再见',py:'Zàijiàn',en:'Goodbye',em:'👋',snd:'dzai-jyen',tip:'Zài means "again" and jiàn means "see" — so goodbye means "see you again"!'},
+  {char:'猫',py:'Māo',en:'Cat',em:'🐱',snd:'maow',tip:'A cat says MEOW — which sounds just like MĀO! Easy!'},
+  {char:'狗',py:'Gǒu',en:'Dog',em:'🐶',snd:'goh',tip:'GǑU — your voice dips down then rises, like asking a question. Gǒu = dog!'},
+  {char:'水',py:'Shuǐ',en:'Water',em:'💧',snd:'shway',tip:'SHUǏ means water. It sounds like "shway". Stay hydrated!'},
+  {char:'火',py:'Huǒ',en:'Fire',em:'🔥',snd:'hwaw',tip:'HUǑ means fire. Hot like fire = Huǒ!'},
+  {char:'大',py:'Dà',en:'Big',em:'🐘',snd:'dah',tip:'DÀ means big. The character looks like a person stretching their arms wide!'},
+  {char:'小',py:'Xiǎo',en:'Small',em:'🐜',snd:'shyow',tip:'XIǍO means small. Think of something tiny — xiǎo!'},
+  {char:'好',py:'Hǎo',en:'Good',em:'👍',snd:'how',tip:'HǍO means good! You already know this from Nǐ hǎo!'},
+  {char:'一',py:'Yī',en:'One',em:'1️⃣',snd:'ee',tip:'YĪ = one. The character IS one horizontal line — simple! 一'},
+  {char:'二',py:'Èr',en:'Two',em:'2️⃣',snd:'ar',tip:'ÈR = two. Two lines! 二 — count them!'},
+  {char:'三',py:'Sān',en:'Three',em:'3️⃣',snd:'sahn',tip:'SĀN = three. Three lines! 三 — count: one, two, three!'},
+  {char:'妈妈',py:'Māma',en:'Mum',em:'👩',snd:'mah-mah',tip:'MĀMA means mum! High flat tone — say it to your mum today!'},
+  {char:'爸爸',py:'Bàba',en:'Dad',em:'👨',snd:'bah-bah',tip:'BÀBA means dad! A falling tone — your voice drops on BÀ!'},
+  {char:'红色',py:'Hóngsè',en:'Red',em:'🔴',snd:'hong-seh',tip:'HÓNGSÈ = red. Hóng = red, sè = colour. Red colour!'},
+  {char:'蓝色',py:'Lánsè',en:'Blue',em:'🔵',snd:'lan-seh',tip:'LÁNSÈ = blue. The sky is lánsè!'},
+  {char:'苹果',py:'Píngguǒ',en:'Apple',em:'🍎',snd:'ping-gwaw',tip:'PÍNGGUǑ = apple. Sounds a bit like "ping-gwo"!'},
+  {char:'书',py:'Shū',en:'Book',em:'📚',snd:'shoo',tip:'SHŪ = book. High flat tone — like saying "shoe" but held longer!'},
+  {char:'太阳',py:'Tàiyáng',en:'Sun',em:'☀️',snd:'tie-yahng',tip:'TÀIYÁNG = sun! Tài = very, yáng = sun — the very sun!'},
+];
+
+function genChinese(lv){
+  const pool=shuffle([...CHINESE]);
+  return pool.slice(0,5).map((item,i)=>{
+    const t=i%3;
+    const wrongs=shuffle(CHINESE.filter(x=>x!==item));
+    if(t===0){
+      const opts=shuffle([item.en,...wrongs.slice(0,3).map(x=>x.en)]);
+      return{type:'mcq',question:`What does this mean in English?`,options:opts,answer:item.en,visual:`<div class="col g6 center"><div class="ch-char">${item.char}</div><div class="pinyin">${item.py}</div><div class="muted" style="font-size:.88rem">🔊 Say it: "${item.snd}"</div></div>`,explanation:`${item.char} (${item.py}) means "${item.en}". ${item.em} ${item.tip}`};
+    }
+    if(t===1){
+      const opts=shuffle([item.py,...wrongs.slice(0,3).map(x=>x.py)]);
+      return{type:'mcq',question:`How do you say "${item.en}" in Chinese? Pick the Pinyin.`,options:opts,answer:item.py,visual:`<div class="col g6 center"><div style="font-size:3.5rem">${item.em}</div><div class="med white">${item.en}</div></div>`,explanation:`"${item.en}" is ${item.char} (${item.py}). Sounds like: "${item.snd}". ${item.tip}`};
+    }
+    const opts=shuffle([item.char,...wrongs.slice(0,3).map(x=>x.char)]);
+    return{type:'mcq',question:`Which character means "${item.en}"?`,options:opts,answer:item.char,optStyle:'chinese',visual:`<div class="col g6 center"><div style="font-size:3.5rem">${item.em}</div><div class="pinyin">${item.py}</div><div class="muted" style="font-size:.88rem">🔊 "${item.snd}"</div></div>`,explanation:`${item.char} means "${item.en}" (${item.py}). ${item.tip}`};
+  });
+}
+
+// ----------------------------------------------------------------
+// HISTORY
+// ----------------------------------------------------------------
+const HIST_L1=[
+  {q:'🔥 The Great Fire of London started in which year?',opts:['1666','1776','1066','1966'],a:'1666',exp:'The Great Fire started on 2nd September 1666, in a bakery on Pudding Lane. It burned for 4 days and destroyed most of the city! Houses were made of wood and packed closely together.'},
+  {q:'💡 Florence Nightingale was famous for being a...?',opts:['nurse','queen','explorer','soldier'],a:'nurse',exp:'Florence Nightingale was called "The Lady with the Lamp" because she carried a lamp when caring for wounded soldiers at night. She worked during the Crimean War and made nursing a proper profession!'},
+  {q:'🌙 Neil Armstrong was the first person to walk on the...?',opts:['Moon','Mars','Sun','Jupiter'],a:'Moon',exp:'Neil Armstrong stepped onto the Moon on 20th July 1969 and said: "That\'s one small step for man, one giant leap for mankind." The mission was called Apollo 11!'},
+  {q:'💣 Guy Fawkes tried to blow up which famous building in 1605?',opts:['The Houses of Parliament','Buckingham Palace','The Tower of London','St Paul\'s Cathedral'],a:'The Houses of Parliament',exp:'Guy Fawkes and his friends hid barrels of gunpowder under Parliament. They were caught! Every 5th November we remember this with Bonfire Night — bonfires and fireworks!'},
+  {q:'👑 What do we call the era named after Queen Victoria?',opts:['The Victorian era','The Tudor era','The Georgian era','The Elizabethan era'],a:'The Victorian era',exp:'Queen Victoria ruled from 1837 to 1901 — 63 years! This period is called the VICTORIAN era. Trains, factories and many famous buildings were built during this time!'},
+  {q:'🔥 Where exactly did the Great Fire of London start?',opts:['A bakery in Pudding Lane','Buckingham Palace','The River Thames','London Bridge'],a:'A bakery in Pudding Lane',exp:'The fire started accidentally in a bakery (bread shop) on Pudding Lane on 2nd September 1666. The baker had left his oven burning. The fire spread fast because houses were wooden and close together!'},
+  {q:'🌺 Mary Seacole was a nurse who came from which country?',opts:['Jamaica','France','India','Australia'],a:'Jamaica',exp:'Mary Seacole was born in Jamaica and came to Britain. Like Florence Nightingale, she helped sick and wounded soldiers. She set up the "British Hotel" near the battlefields during the Crimean War!'},
+];
+
+const HIST_L2=[
+  {q:'⚔️ Boudicca was a queen who fought bravely against which invaders?',opts:['The Romans','The Vikings','The Normans','The Saxons'],a:'The Romans',exp:'Boudicca was queen of the Iceni tribe. Around 60 AD she led a huge revolt against the Romans and burned down the Roman city of Londinium (now London)! She was incredibly brave.'},
+  {q:'🧱 Hadrian\'s Wall was built across northern Britain by which people?',opts:['The Romans','The Vikings','The Anglo-Saxons','The Celts'],a:'The Romans',exp:'Emperor Hadrian ordered the wall built in 122 AD to protect Roman Britain from northern tribes. It stretched 73 miles across England! Parts of it still stand today — you can visit it!'},
+  {q:'⚓ Where did the Vikings originally come from?',opts:['Scandinavia (Norway, Denmark, Sweden)','France','Spain','Greece'],a:'Scandinavia (Norway, Denmark, Sweden)',exp:'Vikings came from Scandinavia — modern Norway, Denmark and Sweden. They were expert sailors who used longships to travel huge distances. They first raided Britain in 793 AD at Lindisfarne!'},
+  {q:'🪨 What material did Stone Age people mainly use to make tools?',opts:['Flint (stone)','Iron','Bronze','Gold'],a:'Flint (stone)',exp:'Stone Age people used FLINT — a very hard stone — to chip into sharp tools and weapons for hunting. The Stone Age began around 10,000 years ago in Britain!'},
+  {q:'🪨 Which famous ancient monument was built during the Stone/Bronze Age?',opts:['Stonehenge','Big Ben','The Tower of London','Windsor Castle'],a:'Stonehenge',exp:'Stonehenge in Wiltshire was built over thousands of years starting around 3000 BC. Nobody knows exactly how or why — it\'s one of the world\'s greatest mysteries! The stones were moved from hundreds of miles away.'},
+  {q:'⚔️ Which Roman emperor actually conquered Britain in 43 AD?',opts:['Claudius','Julius Caesar','Augustus','Nero'],a:'Claudius',exp:'Julius Caesar first came to Britain in 55 BC but didn\'t stay. It was Emperor CLAUDIUS who conquered Britain in 43 AD, making it part of the Roman Empire for nearly 400 years!'},
+  {q:'🛡️ Alfred the Great was a famous king of which people?',opts:['The Anglo-Saxons','The Romans','The Vikings','The Normans'],a:'The Anglo-Saxons',exp:'Alfred the Great (849–899 AD) was king of Wessex and a great Anglo-Saxon leader. He fought off the Vikings, created a navy, and encouraged learning and writing. He\'s one of Britain\'s greatest kings!'},
+];
+
+const HIST_L3=[
+  {q:'🏛️ Democracy — voting to choose leaders — began in which ancient civilisation?',opts:['Ancient Greece','Ancient Egypt','Ancient Rome','Ancient China'],a:'Ancient Greece',exp:'Democracy began in Athens, Greece around 500 BC. "Democracy" comes from Greek: demos (people) + kratos (power) = people power! Before this, most places had kings with no voting at all.'},
+  {q:'🇪🇬 Ancient Egyptians built massive triangular tombs for their kings called...?',opts:['Pyramids','Castles','Cathedrals','Ziggurats'],a:'Pyramids',exp:'The ancient Egyptians built PYRAMIDS as tombs for their pharaohs (kings). The Great Pyramid of Giza was built around 2560 BC and was the tallest man-made structure for 3,800 years!'},
+  {q:'👑 King Henry VIII is famous for having how many wives?',opts:['Six','Three','Eight','Two'],a:'Six',exp:'Henry VIII (1491–1547) had SIX wives! Remember: Divorced, Beheaded, Died, Divorced, Beheaded, Survived. He also started the Church of England when the Pope wouldn\'t let him divorce!'},
+  {q:'📜 The Magna Carta (Great Charter) was signed in which year?',opts:['1215','1066','1415','1512'],a:'1215',exp:'King John was forced to sign the Magna Carta in 1215. It said even the KING had to obey the law and respect people\'s rights. It\'s one of the most important documents in history!'},
+  {q:'✈️ Who was Britain\'s Prime Minister during most of World War Two?',opts:['Winston Churchill','Adolf Hitler','Franklin Roosevelt','Neville Chamberlain'],a:'Winston Churchill',exp:'Winston Churchill became PM in 1940 and led Britain through WW2 (1939–1945). His famous speech said: "We shall fight on the beaches... we shall NEVER surrender!" He\'s one of Britain\'s greatest heroes.'},
+  {q:'🏹 The Battle of Hastings in 1066 was fought between Harold and which king?',opts:['William the Conqueror','King John','Henry VIII','Richard the Lionheart'],a:'William the Conqueror',exp:'In 1066, William of Normandy (France) invaded England and beat King Harold at the Battle of Hastings. Harold was killed by an arrow! William became the first Norman King of England.'},
+  {q:'🚂 Queen Victoria\'s reign is linked to the growth of which invention?',opts:['Railways (trains)','Aeroplanes','The internet','Cars'],a:'Railways (trains)',exp:'During the Victorian era, the railway network expanded massively across Britain. By 1900 there were over 18,000 miles of railway! This changed how people travelled, how goods were moved, and how towns grew.'},
+];
+
+function genHistory(lv){
+  const pool=lv===1?HIST_L1:lv===2?HIST_L2:HIST_L3;
+  return shuffle([...pool]).slice(0,6).map(item=>({
+    type:'mcq',
+    question:item.q,
+    options:shuffle([...item.opts]),
+    answer:item.a,
+    explanation:item.exp,
+    visual:''
+  }));
+}
+
+// ================================================================
+// APPLE TOUCH ICON — generated via Canvas, no external files
+// ================================================================
+function generateIcon(){
+  try{
+    const sz=180,cr=36;
+    const cv=document.createElement('canvas');cv.width=cv.height=sz;
+    const ctx=cv.getContext('2d');
+
+    // Rounded-rect clip (iOS icon shape)
+    ctx.beginPath();
+    ctx.moveTo(cr,0);ctx.lineTo(sz-cr,0);ctx.arcTo(sz,0,sz,cr,cr);
+    ctx.lineTo(sz,sz-cr);ctx.arcTo(sz,sz,sz-cr,sz,cr);
+    ctx.lineTo(cr,sz);ctx.arcTo(0,sz,0,sz-cr,cr);
+    ctx.lineTo(0,cr);ctx.arcTo(0,0,cr,0,cr);
+    ctx.closePath();ctx.save();ctx.clip();
+
+    // Deep-space background gradient
+    const bg=ctx.createLinearGradient(0,0,sz,sz);
+    bg.addColorStop(0,'#2a0e5c');bg.addColorStop(0.55,'#1a0a2e');bg.addColorStop(1,'#0d0520');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,sz,sz);
+
+    // Subtle grid lines (spacey feel)
+    ctx.strokeStyle='rgba(155,89,182,0.18)';ctx.lineWidth=1;
+    for(let x=18;x<sz;x+=18){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,sz);ctx.stroke()}
+    for(let y=18;y<sz;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(sz,y);ctx.stroke()}
+
+    // Tiny background stars
+    const starDots=[[14,18],[48,10],[130,8],[162,22],[170,60],[8,95],[172,105],[25,148],[155,140],[95,165]];
+    starDots.forEach(([x,y],i)=>{
+      ctx.fillStyle=`rgba(255,255,255,${0.3+i%4*0.12})`;
+      ctx.beginPath();ctx.arc(x,y,i%3===0?2:1,0,Math.PI*2);ctx.fill();
+    });
+
+    // Outer ring
+    ctx.strokeStyle='rgba(255,215,0,0.35)';ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(cr,0);ctx.lineTo(sz-cr,0);ctx.arcTo(sz,0,sz,cr,cr);
+    ctx.lineTo(sz,sz-cr);ctx.arcTo(sz,sz,sz-cr,sz,cr);
+    ctx.lineTo(cr,sz);ctx.arcTo(0,sz,0,sz-cr,cr);
+    ctx.lineTo(0,cr);ctx.arcTo(0,0,cr,0,cr);
+    ctx.closePath();ctx.stroke();
+
+    // Gold 5-point star (centre)
+    const scx=sz/2,scy=70,outer=50,inner=20;
+    ctx.beginPath();
+    for(let i=0;i<10;i++){
+      const a=(i*Math.PI/5)-Math.PI/2;
+      const r=i%2===0?outer:inner;
+      const px=scx+r*Math.cos(a),py=scy+r*Math.sin(a);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.shadowColor='#FFD700';ctx.shadowBlur=22;
+    const starG=ctx.createRadialGradient(scx,scy-10,2,scx,scy,outer);
+    starG.addColorStop(0,'#FFFDE7');starG.addColorStop(0.45,'#FFD700');starG.addColorStop(1,'#FF8C00');
+    ctx.fillStyle=starG;ctx.fill();
+    ctx.shadowBlur=0;
+
+    // Star outline sparkle
+    ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+
+    // Four corner sparkles ✦
+    [[28,28],[152,28],[28,148],[152,148]].forEach(([x,y])=>{
+      ctx.fillStyle='rgba(255,215,0,0.7)';
+      ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('✦',x,y);
+    });
+
+    // "Michael's" label
+    ctx.shadowColor='rgba(0,0,0,0.7)';ctx.shadowBlur=5;
+    ctx.fillStyle='#FFFFFF';
+    ctx.font='bold 15px "Arial Rounded MT Bold",Arial';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText("Michael's",scx,130);
+
+    // "APP" label in gold
+    ctx.fillStyle='#FFD700';
+    ctx.font='bold 19px "Arial Rounded MT Bold",Arial';
+    ctx.shadowColor='rgba(255,215,0,0.5)';ctx.shadowBlur=8;
+    ctx.fillText('ADVENTURE',scx,153);
+    ctx.shadowBlur=0;
+
+    ctx.restore();
+
+    // Inject into <link rel="apple-touch-icon">
+    const link=document.getElementById('appleTouchIcon');
+    if(link)link.setAttribute('href',cv.toDataURL('image/png'));
+  }catch(e){}
+}
+
+// ================================================================
+// INIT
+// ================================================================
+window.addEventListener('DOMContentLoaded',()=>{
+  generateIcon();migrate();setupHome();showScreen('homeScreen');
+  document.addEventListener('touchstart',()=>ensureAudio(),{once:true});
+  document.addEventListener('mousedown',()=>ensureAudio(),{once:true});
+});
+</script>
+</body>
+</html>
